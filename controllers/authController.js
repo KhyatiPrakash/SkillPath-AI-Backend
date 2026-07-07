@@ -1,5 +1,5 @@
-import User from "../models/User";
-import generateToken from "../utils/generateToken";
+import User from "../models/User.js";
+import generateToken from "../utils/generateToken.js";
 
 export const registerUser = async (req, res) => {
     const{ name, email, password } = req.body;
@@ -16,7 +16,7 @@ export const registerUser = async (req, res) => {
         throw new Error("Password must be at least 6 characters long");
     }
 
-    const userExists = await User.findOne({ email});
+    const userExists = await User.findOne({ email });
 
     if(userExists) {
         res.status(400);

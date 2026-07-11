@@ -3,14 +3,16 @@ import Career from "../models/Career.js";
 // Create Career
 export const createCareer = async (req, res) => {
   const {
-    title,
-    description,
-    category,
-    requiredSkills,
-    averageSalary,
-    difficulty,
-    futureScope,
-  } = req.body;
+  title,
+  description,
+  category,
+  requiredSkills,
+  averageSalary,
+  difficulty,
+  futureScope,
+  roadmap,
+  learningResources,
+} = req.body;
 
   if (!title || !description || !category || !averageSalary || !futureScope) {
     res.status(400);
@@ -25,14 +27,16 @@ export const createCareer = async (req, res) => {
   }
 
   const career = await Career.create({
-    title,
-    description,
-    category,
-    requiredSkills,
-    averageSalary,
-    difficulty,
-    futureScope,
-  });
+  title,
+  description,
+  category,
+  requiredSkills,
+  averageSalary,
+  difficulty,
+  futureScope,
+  roadmap,
+  learningResources,
+});
 
   res.status(201).json(career);
 };
@@ -87,4 +91,29 @@ export const deleteCareer = async (req, res) => {
   res.status(200).json({
     message: "Career deleted successfully",
   });
+};
+
+// Search Careers
+export const searchCareers = async (req, res) => {
+  const keyword = req.query.keyword;
+
+  const careers = await Career.find({
+    title: {
+      $regex: keyword,
+      $options: "i",
+    },
+  });
+
+  res.status(200).json(careers);
+};
+
+// Filter Careers by Category
+export const filterCareers = async (req, res) => {
+  const category = req.query.category;
+
+  const careers = await Career.find({
+    category: category,
+  });
+
+  res.status(200).json(careers);
 };

@@ -44,6 +44,30 @@ const careerSchema = new mongoose.Schema(
       required: [true, "Future scope is required"],
       trim: true,
     },
+
+    roadmap: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+
+    learningResources: [
+      {
+        title: {
+          type: String,
+          trim: true,
+        },
+        type: {
+          type: String,
+          enum: ["YouTube", "Course", "Website", "Documentation", "Book"],
+        },
+        url: {
+          type: String,
+          trim: true,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

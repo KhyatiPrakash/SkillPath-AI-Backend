@@ -1,46 +1,86 @@
+import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
-export const registerUser = async (req, res) => {
-    const{ name, email, password } = req.body;
-    if(!name || !email || !password ) {
-        res.status(400);
-        throw new Error("Please add all fields")
-    }
-    if(!isValidEmail(email)) {
-        res.status(400);
-        throw new Error("Invalid email format");
-    }
-     if(!isValidPassword(password)) {
-        res.status(400);
-        throw new Error("Password must be at least 6 characters long");
-    }
+// @desc Register User
+// @route POST /api/auth/register
+// @access Public
 
-    const userExists = await User.findOne({ email });
+export const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
 
-    if(userExists) {
-        res.status(400);
-        throw new Error("User already exists");
-    }
+  // Check required fields
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error("Please fill all required fields");
+  }
 
-    const user = await User.create({
-      name,
-      email,
-      password  
-    })
+  // Check if user already exists
+  const userExists = await User.findOne({ email });
 
-    if(user) {
-        generateToken(res, user._id);
-        res.status(201).json({
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            }
-        });
-    }else {
-        res.status(400);
-        throw new Error("Invalid user data");
-    }
-}
+  if (userExists) {
+    res.status(400);
+    throw new Error("User already exists");
+  }
+
+  // Create user
+  const user = await User.create({
+    name,
+    email,
+    password,
+  });
+
+  if (user) {
+    generateToken(res, user._id);
+
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid user data");
+  }
+});
+
+// @desc Login User
+// @route POST /api/auth/login
+// @access Public
+
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // Check required fields
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Please enter email and password");
+  }
+
+  // Find user
+  const user = await User.findOne({ email });
+
+  // Check password
+  if (user && (await user.matchPassword(password))) {
+    generateToken(res, user._id);
+
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+  } else {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+});
+
+// @desc Get Current User
+// @route GET /api/auth/profile
+// @access Private
+
+export const getUserProfile = asyncHandler(async (req, res) => {
+  res.status(200).json(req.user);
+});

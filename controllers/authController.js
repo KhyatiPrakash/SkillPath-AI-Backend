@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import Career from "../models/Career.js";
 
 // ===============================
 // @desc Register User
@@ -107,4 +108,59 @@ export const getUserProfile = asyncHandler(async (req, res) => {
     email: req.user.email,
     role: req.user.role,
   });
+});
+
+// @desc Save Career
+// @route POST /api/auth/save-career/:careerId
+// @access Private
+
+export const saveCareer = asyncHandler(async (req, res) => {
+  try {
+    console.log("===== SAVE CAREER =====");
+
+    const user = await User.findById(req.user._id);
+    const { careerId } = req.params;
+
+    const career = await Career.findById(careerId);
+
+    if (!career) {
+      return res.status(404).json({ message: "Career not found" });
+    }
+
+    console.log("Before push:", user.savedCareers);
+
+    if (!user.savedCareers.includes(careerId)) {
+      user.savedCareers.push(careerId);
+
+      console.log("After push:", user.savedCareers);
+
+      await user.save();
+
+      console.log("User saved successfully");
+    }
+
+    return res.status(200).json({
+      message: "Career saved successfully",
+      savedCareers: user.savedCareers,
+    });
+
+  } catch (error) {
+    console.error("SAVE CAREER ERROR:");
+    console.error(error);
+
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+
+// @desc Get Saved Careers
+// @route GET /api/auth/saved-careers
+// @access Private
+
+export const getSavedCareers = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).populate("savedCareers");
+
+  res.status(200).json(user.savedCareers);
 });

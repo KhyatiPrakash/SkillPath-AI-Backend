@@ -8,6 +8,12 @@ const userSchema = new mongoose.Schema(
         password: { type: String, required: [true, 'Password is required'], minlength: [6, 'Password must be at least 6 characters long'] },
         role: { type: String, enum: ['student', 'admin', 'mentor'], default: 'student' },
         isActive: { type: Boolean, default: true },
+        savedCareers: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Career",
+  },
+],
     }
     , 
     { 
@@ -19,8 +25,9 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 }
 
-userSchema.pre('save', async function (next){
-    if(!this.isModified('password')) return next();
+userSchema.pre("save", async function () {
+    if (!this.isModified("password")) return;
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });

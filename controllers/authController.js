@@ -164,3 +164,24 @@ export const getSavedCareers = asyncHandler(async (req, res) => {
 
   res.status(200).json(user.savedCareers);
 });
+
+// @desc Remove Saved Career
+// @route DELETE /api/auth/save-career/:careerId
+// @access Private
+
+export const removeSavedCareer = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  const { careerId } = req.params;
+
+  user.savedCareers = user.savedCareers.filter(
+    (id) => id.toString() !== careerId
+  );
+
+  await user.save();
+
+  res.status(200).json({
+    message: "Career removed successfully",
+    savedCareers: user.savedCareers,
+  });
+});

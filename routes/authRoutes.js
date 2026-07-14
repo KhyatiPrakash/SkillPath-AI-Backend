@@ -6,6 +6,7 @@ import {
   logoutUser,
   getUserProfile,
   saveCareer,
+  removeSavedCareer,
   getSavedCareers,
 } from "../controllers/authController.js";
 
@@ -27,6 +28,12 @@ router.get(
   "/saved-careers",
   protect,
   getSavedCareers
+);
+
+router.delete(
+  "/save-career/:careerId",
+  protect,
+  removeSavedCareer
 );
 
 export default router;

@@ -2,20 +2,19 @@ import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
+// ===============================
 // @desc Register User
 // @route POST /api/auth/register
 // @access Public
-
+// ===============================
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  // Check required fields
   if (!name || !email || !password) {
     res.status(400);
     throw new Error("Please fill all required fields");
   }
 
-  // Check if user already exists
   const userExists = await User.findOne({ email });
 
   if (userExists) {
@@ -23,7 +22,6 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new Error("User already exists");
   }
 
-  // Create user
   const user = await User.create({
     name,
     email,
@@ -45,23 +43,21 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
+// ===============================
 // @desc Login User
 // @route POST /api/auth/login
 // @access Public
-
+// ===============================
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Check required fields
   if (!email || !password) {
     res.status(400);
     throw new Error("Please enter email and password");
   }
 
-  // Find user
   const user = await User.findOne({ email });
 
-  // Check password
   if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
 
@@ -77,10 +73,38 @@ export const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Get Current User
+// ===============================
+// @desc Logout User
+// @route POST /api/auth/logout
+// @access Private
+// ===============================
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+    secure:
+      process.env.NODE_ENV === "production" || !!process.env.CLIENT_URL,
+    sameSite:
+      process.env.NODE_ENV === "production" || !!process.env.CLIENT_URL
+        ? "none"
+        : "strict",
+  });
+
+  res.status(200).json({
+    message: "Logged out successfully",
+  });
+});
+
+// ===============================
+// @desc Get Current User Profile
 // @route GET /api/auth/profile
 // @access Private
-
+// ===============================
 export const getUserProfile = asyncHandler(async (req, res) => {
-  res.status(200).json(req.user);
+  res.status(200).json({
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    role: req.user.role,
+  });
 });

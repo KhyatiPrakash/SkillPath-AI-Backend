@@ -9,20 +9,23 @@ import {
   filterCareers,
 } from "../controllers/careerController.js";
 
+import { protect } from "../middleware/authMiddleware.js";
+import { adminOnly } from "../middleware/adminMiddleware.js";
+
 const router = express.Router();
 
-// Search & Filter Routes (Must come BEFORE /:id)
+// Public Routes
 router.get("/search", searchCareers);
 router.get("/filter", filterCareers);
 
-// CRUD Routes
-router.route("/")
-  .post(createCareer)
-  .get(getCareers);
+router.get("/", getCareers);
+router.get("/:id", getCareerById);
 
-router.route("/:id")
-  .get(getCareerById)
-  .put(updateCareer)
-  .delete(deleteCareer);
+// Admin Routes
+router.post("/", protect, adminOnly, createCareer);
+
+router.put("/:id", protect, adminOnly, updateCareer);
+
+router.delete("/:id", protect, adminOnly, deleteCareer);
 
 export default router;
